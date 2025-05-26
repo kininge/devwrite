@@ -17,31 +17,32 @@
 ---
 
 ## 🗂 Folder Structure
+```text
 /devwrite
-/client # React.js frontend (Vite)
-/src
-/components
-/pages
-/context
-/hooks
-index.html
-main.jsx
-
-/server # Node.js + Express + Socket.IO backend
-/controllers
-/routes
-/sockets
-server.js
-
-/docs # Planning, design, and roadmap
-README.md
-system-design.md
-feature-roadmap.md
-
-.gitignore
-LICENSE
-README.md
-
+├── client                 # React.js frontend (Vite)
+│   └── src
+│       ├── components
+│       ├── pages
+│       ├── context
+│       └── hooks
+│   ├── index.html
+│   └── main.tsx
+│
+├── server                 # Node.js + Express + Socket.IO backend
+│   ├── controllers
+│   ├── routes
+│   ├── sockets
+│   └── server.ts
+│
+├── docs                   # Planning, design, and roadmap
+│   ├── README.md
+│   ├── system-design.md
+│   └── feature-roadmap.md
+│
+├── .gitignore
+├── LICENSE
+└── README.md
+```
 
 ---
 
@@ -66,7 +67,7 @@ README.md
 ---
 
 ## 🧠 Why This Project?
-This is more than a portfolio piece. DevWrite reflects full-stack engineering depth, system design understanding, frontend polish, and real-time programming expertise — all of which matter for Tier A tech roles.
+This project reflects the kind of technical depth, architecture thinking, and end-to-end problem-solving expected at top-tier engineering roles. While it’s personally fulfilling and user-facing, it’s also strategically built to strengthen candidacy for Tier A tech companies by demonstrating real-time collaboration, system design, and full-stack capability in action.
 
 ---
 
