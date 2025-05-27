@@ -46,23 +46,51 @@
 
 ---
 
-## ✅ Core Features (MVP)
+## ✅ MVP Features
+
+### 🔐 Authentication
 - [ ] Google + GitHub login via Firebase
-- [ ] User dashboard with doc history
-- [ ] Create/edit plain text documents
-- [ ] Share & collaborate in realtime (Socket.IO)
-- [ ] Document persistence per user
-- [ ] Responsive UI with Tailwind
+- [ ] Auth context with persistent session
+- [ ] Display logged-in user info
+
+### 🏠 Dashboard
+- [ ] View previous documents
+- [ ] Create new document
+- [ ] Open existing document
+
+### 📝 Text Editor
+- [ ] Large textarea
+- [ ] Auto-save
+- [ ] Clean UI with Tailwind
+
+### 🔄 Realtime Collaboration
+- [ ] Sync text between users via Socket.IO
+- [ ] Join by doc URL
+- [ ] Basic debounce + sync
+
+### 💾 Document Persistence
+- [ ] Save docs by user
+- [ ] Load docs into editor
+- [ ] Create new doc with default title
+
+### 📱 UI/UX
+- [ ] Responsive layout
+- [ ] Mobile-friendly views
+
 
 ---
 
 ## 🔜 Future Additions
 - [ ] Markdown & rich text formatting
 - [ ] Syntax-highlighted code editing (Monaco Editor)
-- [ ] CRDT-based conflict resolution
 - [ ] Document version history
 - [ ] PDF export
 - [ ] Invite collaborators with roles
+- [ ] Integrate Y.js for CRDT-based document syncing
+- [ ] Use Y-WebSocket for scalable real-time transport
+- [ ] Add offline editing with IndexedDB + Y.js
+- [ ] Support document version snapshots using Y.js history
+
 
 ---
 
