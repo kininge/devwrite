@@ -128,5 +128,5 @@ collaboration, system design, and full-stack capability in action.
 
 Pritam Kininge  
 [GitHub](https://github.com/kininge) |
-[LinkedIn](https://linkedin.com/in/pritam-kininge)
+[LinkedIn](https://linkedin.com/in/pritam-kininge) |
 [Leetcode](https://leetcode.com/u/kininge007/)
