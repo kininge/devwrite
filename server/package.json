@@ -7,14 +7,25 @@
 		"dev": "ts-node-dev --respawn src/server.ts"
 	},
 	"dependencies": {
+		"@prisma/client": "^6.9.0",
+		"bcrypt": "^6.0.0",
+		"cookie-parser": "^1.4.7",
 		"cors": "^2.8.5",
 		"express": "^5.1.0",
+		"jsonwebtoken": "^9.0.2",
+		"pino": "^9.7.0",
+		"pino-pretty": "^13.0.0",
+		"prisma": "^6.9.0",
 		"socket.io": "^4.8.1"
 	},
 	"devDependencies": {
+		"@types/bcrypt": "^5.0.2",
+		"@types/cookie-parser": "^1.4.8",
 		"@types/express": "^5.0.2",
+		"@types/jsonwebtoken": "^9.0.9",
 		"@types/node": "^22.15.29",
 		"@types/socket.io": "^3.0.2",
+		"ts-node": "^10.9.2",
 		"ts-node-dev": "^2.0.0",
 		"typescript": "^5.8.3"
 	}
