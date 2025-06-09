@@ -1,44 +1,29 @@
 /** @format */
 
 import express from "express";
-import http from "http";
-import { Server } from "socket.io";
 import cors from "cors";
+import cookieParser from "cookie-parser";
+import authRoutes from "./routes/auth";
+import { PATHS } from "./utils/paths";
+import { requestMiddleware } from "./middlewares/request.middleware";
+import logger from "./utils/logger";
 
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-	cors: {
-		origin: "http://localhost:5173", // your frontend origin
-		credentials: true,
-	},
+const app = express(); // Create an Express application
+app.use(requestMiddleware); // Apply the request middleware to log requests
+const PORT = process.env.PORT || 3000; // Set the port for the server
+app.use(cors({ origin: "http://localhost:5173", credentials: true })); // Enable CORS for all routes
+app.use(express.json()); // Parse JSON request bodies
+app.use(cookieParser()); // Parse cookies from request headers
+
+// routers
+app.get("/", (req, res) => {
+	// Root route
+	// Respond with a welcome message
+	res.send("Welcome to the DevWrite!");
 });
+app.use(PATHS.AUTH_VERSION_1, authRoutes); // auth routes
 
-app.use(cors());
-app.use(express.json());
-
-app.get("/", (_req, res) => {
-	res.send("Server is running!");
-});
-
-io.on("connection", (socket) => {
-	console.log("Client connected:", socket.id);
-
-	socket.on("join-room", (roomId: string) => {
-		socket.join(roomId);
-		console.log(`Client ${socket.id} joined room ${roomId}`);
-	});
-
-	socket.on("text-changed", (data) => {
-		socket.to(data.room).emit("text-update", data.content);
-	});
-
-	socket.on("disconnect", () => {
-		console.log("Client disconnected:", socket.id);
-	});
-});
-
-const PORT = 3000;
-server.listen(PORT, () => {
-	console.log(`Server running on http://localhost:${PORT}`);
+app.listen(PORT, () => {
+	// Start the server
+	logger.info(`DevWrite Service is running on http://localhost:${PORT}`); // Log the server URL
 });
