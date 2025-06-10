@@ -4,19 +4,25 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { User } from "@prisma/client";
 import prisma from "../utils/prisma";
-import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
-import { BadRequestError, ConflictError } from "../utils/customErrors";
+import {
+	BadRequestError,
+	ConflictError,
+	NotFoundError,
+} from "../utils/customErrors";
 import logger from "../utils/logger";
+import { CONSTANTS } from "../utils/constants";
+import { generateTokens } from "../utils/generateTokens";
+import { setAuthCookies } from "../utils/setAuthCookies";
 
 export const signup = async (request: Request, response: Response) => {
 	const { email, password, name, image } = request.body;
 
 	// validate input
 	if (!email || !password) {
-		new BadRequestError("Email and password required.");
+		new BadRequestError(CONSTANTS.ERRORS.MISSING_EMAIL_OR_PASSWORD);
 		return response
 			.status(400)
-			.json({ error: "Email and password required." });
+			.json({ error: CONSTANTS.ERRORS.MISSING_EMAIL_OR_PASSWORD });
 	}
 
 	// check if user already exists
@@ -24,8 +30,10 @@ export const signup = async (request: Request, response: Response) => {
 		where: { email },
 	});
 	if (existingUser) {
-		new ConflictError("User already exists.");
-		return response.status(409).json({ error: "User already exists." });
+		new ConflictError(CONSTANTS.ERRORS.USER_ALREADY_EXIST);
+		return response
+			.status(409)
+			.json({ error: CONSTANTS.ERRORS.USER_ALREADY_EXIST });
 	}
 
 	// hash the password and create a new user
@@ -38,43 +46,73 @@ export const signup = async (request: Request, response: Response) => {
 			image,
 		},
 	});
-	logger.info(`New user created: ${newUser.email}`, {
+	logger.info(CONSTANTS.NEW_USER_GENERATED(newUser.email), {
 		userId: newUser.id,
 		email: newUser.email,
 		name: newUser.name || "---",
 		image: newUser.image || "---",
 	});
 
-	const accessToken = generateAccessToken({
-		userId: newUser.id,
-		email: newUser.email,
-		name: newUser.name || "---",
-	});
-	const refreshToken = generateRefreshToken({
-		userId: newUser.id,
-	});
-	logger.info(
-		`Access and refresh tokens generated for user: ${newUser.email}`,
-		{
-			userId: newUser.id,
-		}
+	const { accessToken, refreshToken } = generateTokens(
+		newUser.id,
+		newUser.email,
+		newUser.name || "---"
 	);
+	logger.info(CONSTANTS.NEW_TOKEN_GENERATED(newUser.email), {
+		userId: newUser.id,
+	});
 
-	return response
-		.cookie("access_token", accessToken, {
-			httpOnly: true,
-			secure: process.env.NODE_ENV === "production",
-			sameSite: "strict",
-			maxAge: 15 * 60 * 1000, // 15 minutes
-		})
-		.cookie("refresh_token", refreshToken, {
-			httpOnly: true,
-			secure: process.env.NODE_ENV === "production",
-			sameSite: "strict",
-			maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-		})
+	return setAuthCookies(response, accessToken, refreshToken)
 		.status(201)
 		.json({
 			id: newUser.id,
+		});
+};
+
+export const login = async (request: Request, response: Response) => {
+	const { email, password } = request.body;
+
+	// validate input
+	if (!email || !password) {
+		new BadRequestError(CONSTANTS.ERRORS.MISSING_EMAIL_OR_PASSWORD);
+		return response
+			.status(400)
+			.json({ error: CONSTANTS.ERRORS.MISSING_EMAIL_OR_PASSWORD });
+	}
+
+	// check if user exists and password is correct
+	const user = await prisma.user.findUnique({
+		where: { email },
+	});
+	if (!user) {
+		new NotFoundError(CONSTANTS.USER_NOT_FOUND(email));
+		return response
+			.status(404)
+			.json({ error: CONSTANTS.ERRORS.INVALID_CREDENTIALS });
+	}
+	// password is hashed, so we need to compare it
+	const isPasswordValid = await bcrypt.compare(password, user.password ?? "");
+	if (!isPasswordValid) {
+		new BadRequestError(CONSTANTS.PASSWORD_NOT_MATCHED(email));
+		return response
+			.status(401)
+			.json({ error: CONSTANTS.ERRORS.INVALID_CREDENTIALS });
+	}
+
+	const { accessToken, refreshToken } = generateTokens(
+		user.id,
+		user.email,
+		user.name || "---"
+	);
+	logger.info(CONSTANTS.NEW_TOKEN_GENERATED(user.email), {
+		userId: user.id,
+		email: user.email,
+		name: user.name || "---",
+		image: user.image || "---",
+	});
+	return setAuthCookies(response, accessToken, refreshToken)
+		.status(200)
+		.json({
+			id: user.id,
 		});
 };
