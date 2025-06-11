@@ -16,9 +16,12 @@ export const CONSTANTS = {
 	USER_NOT_FOUND: (email: string) => `User not found for ${email}`,
 	PASSWORD_NOT_MATCHED: (email: string) =>
 		`Password does not match for ${email}`,
+	TOKENS_REFRESHED: "Tokens refreshed",
 	ERRORS: {
 		MISSING_EMAIL_OR_PASSWORD: "Email and password required.",
 		USER_ALREADY_EXIST: "User already exists.",
 		INVALID_CREDENTIALS: "Invalid credentials provided.",
+		INVALID_REFRESH_TOKEN: "Invalid or expired refresh token",
+		NO_REFRESH_TOKEN_PROVIDED: "No refresh token provided",
 	},
 };
