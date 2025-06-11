@@ -4,10 +4,13 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { User } from "@prisma/client";
 import prisma from "../utils/prisma";
+import jwt from "jsonwebtoken";
 import {
 	BadRequestError,
+	UnauthorizedError,
 	ConflictError,
 	NotFoundError,
+	ForbiddenError,
 } from "../utils/customErrors";
 import logger from "../utils/logger";
 import { CONSTANTS } from "../utils/constants";
@@ -115,4 +118,57 @@ export const login = async (request: Request, response: Response) => {
 		.json({
 			id: user.id,
 		});
+};
+
+export const refreshToken = async (request: Request, response: Response) => {
+	try {
+		const currentRefreshToken = request.cookies[CONSTANTS.REFRESH_TOKEN];
+		// missing refresh token
+		if (!currentRefreshToken) {
+			new UnauthorizedError(CONSTANTS.ERRORS.NO_REFRESH_TOKEN_PROVIDED);
+			return response
+				.status(401)
+				.json({ error: CONSTANTS.ERRORS.NO_REFRESH_TOKEN_PROVIDED });
+		}
+		// decrypt the refresh token`
+		const decoded = jwt.verify(
+			currentRefreshToken,
+			process.env.JWT_REFRESH_SECRET!
+		) as { userId: string };
+
+		// find the user by id
+		const user = await prisma.user.findUnique({
+			where: { id: decoded.userId },
+		});
+		// user not found
+		if (!user) {
+			new NotFoundError(CONSTANTS.USER_NOT_FOUND(decoded.userId));
+			return response
+				.status(404)
+				.json({ error: CONSTANTS.ERRORS.INVALID_REFRESH_TOKEN });
+		}
+
+		const { accessToken, refreshToken } = generateTokens(
+			user.id,
+			user.email,
+			user.name || "---"
+		);
+		logger.info(CONSTANTS.NEW_TOKEN_GENERATED(user.email), {
+			userId: user.id,
+			email: user.email,
+			name: user.name || "---",
+			image: user.image || "---",
+		});
+		return setAuthCookies(response, accessToken, refreshToken)
+			.status(200)
+			.json({
+				id: user.id,
+				message: CONSTANTS.TOKENS_REFRESHED,
+			});
+	} catch (error) {
+		new ForbiddenError(CONSTANTS.ERRORS.INVALID_REFRESH_TOKEN);
+		return response
+			.status(403)
+			.json({ error: CONSTANTS.ERRORS.INVALID_REFRESH_TOKEN });
+	}
 };

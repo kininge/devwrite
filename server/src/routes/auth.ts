@@ -1,7 +1,7 @@
 /** @format */
 
 import express, { Request, Response, NextFunction } from "express";
-import { signup, login } from "../controllers/auth.controller";
+import { signup, login, refreshToken } from "../controllers/auth.controller";
 import { ACTIONS } from "../utils/paths";
 
 const router = express.Router();
@@ -19,6 +19,14 @@ router.post(
 	ACTIONS.LOGIN,
 	(request: Request, response: Response, next: NextFunction) => {
 		Promise.resolve(login(request, response)).catch(next);
+	}
+);
+
+// Route to refresh user tokens
+router.post(
+	ACTIONS.REFRESH_TOKEN,
+	(request: Request, response: Response, next: NextFunction) => {
+		Promise.resolve(refreshToken(request, response)).catch(next);
 	}
 );
 
