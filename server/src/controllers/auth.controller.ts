@@ -172,3 +172,9 @@ export const refreshToken = async (request: Request, response: Response) => {
 			.json({ error: CONSTANTS.ERRORS.INVALID_REFRESH_TOKEN });
 	}
 };
+
+export const logout = async (request: Request, response: Response) => {
+	response.clearCookie(CONSTANTS.ACCESS_TOKEN);
+	response.clearCookie(CONSTANTS.REFRESH_TOKEN);
+	return response.status(200).json({ message: CONSTANTS.LOGOUT_SUCCESS });
+};

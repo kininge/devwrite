@@ -1,7 +1,12 @@
 /** @format */
 
 import express, { Request, Response, NextFunction } from "express";
-import { signup, login, refreshToken } from "../controllers/auth.controller";
+import {
+	signup,
+	login,
+	refreshToken,
+	logout,
+} from "../controllers/auth.controller";
 import { ACTIONS } from "../utils/paths";
 
 const router = express.Router();
@@ -27,6 +32,14 @@ router.post(
 	ACTIONS.REFRESH_TOKEN,
 	(request: Request, response: Response, next: NextFunction) => {
 		Promise.resolve(refreshToken(request, response)).catch(next);
+	}
+);
+
+// Route to handle user logout
+router.post(
+	ACTIONS.LOGOUT,
+	(request: Request, response: Response, next: NextFunction) => {
+		Promise.resolve(logout(request, response).catch(next));
 	}
 );
 

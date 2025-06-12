@@ -17,6 +17,7 @@ export const CONSTANTS = {
 	PASSWORD_NOT_MATCHED: (email: string) =>
 		`Password does not match for ${email}`,
 	TOKENS_REFRESHED: "Tokens refreshed",
+	LOGOUT_SUCCESS: "Logged out successfully",
 	ERRORS: {
 		MISSING_EMAIL_OR_PASSWORD: "Email and password required.",
 		USER_ALREADY_EXIST: "User already exists.",
