@@ -17,7 +17,8 @@ model User {
   id            String         @id @default(uuid())
   email         String         @unique
   name          String
-  passwordHash  String
+  password      String
+  image         String?
   refreshTokens RefreshToken[] // relation back to RefreshToken
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
