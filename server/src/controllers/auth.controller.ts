@@ -19,6 +19,8 @@ import { createHash } from "crypto";
 import { getRefreshToken } from "../utils/getFreshToken";
 import { verifyRefreshToken } from "../utils/jwt";
 import { UserRequest } from "../types/models";
+import jwt from "jsonwebtoken";
+import { validateDevice } from "../utils/validations";
 
 export const signup = async (request: Request, response: Response) => {
 	const { email, password, name, image } = request.body;
@@ -146,7 +148,7 @@ export const login = async (request: Request, response: Response) => {
 			.update(deviceId)
 			.digest("hex");
 		await prisma.refreshToken.updateMany({
-			where: { userId: user.id, deviceIdHash },
+			where: { userId: user.id, deviceIdHash, isRevoked: false },
 			data: { isRevoked: true }, // set isRevoked to true
 		});
 
@@ -169,6 +171,100 @@ export const login = async (request: Request, response: Response) => {
 			.status(200)
 			.json({
 				id: user.id,
+			});
+	} catch (error) {
+		const errorMessage =
+			error instanceof Error ? error.message : String(error);
+		new InternalServerError(errorMessage);
+		return response
+			.status(500)
+			.json({ error: CONSTANTS.ERRORS.INTERNAL_SERVER_ERROR });
+	}
+};
+
+export const refreshToken = async (request: Request, response: Response) => {
+	try {
+		// from request headers
+		const deviceId = request.get("X-Device-ID");
+		const deviceInfo = request.get("User-Agent");
+		const ipAddress = request.ip;
+		// validate device id
+		validateDevice(response, deviceId);
+		const deviceIdHash = createHash("sha256")
+			.update(deviceId!)
+			.digest("hex");
+
+		const currentRefreshToken = getRefreshToken(request);
+		const currentAccessToken = request.cookies[CONSTANTS.ACCESS_TOKEN];
+		if (!currentRefreshToken || !currentAccessToken) {
+			new BadRequestError(CONSTANTS.ERRORS.MISSING_REFRESH_TOKEN);
+			return response
+				.status(400)
+				.json({ error: CONSTANTS.ERRORS.MISSING_REFRESH_TOKEN });
+		}
+
+		// verify the refresh token
+		const refreshTokenPayload = verifyRefreshToken(currentRefreshToken);
+		if (!refreshTokenPayload || !refreshTokenPayload.refreshTokenId) {
+			new UnauthorizedError(CONSTANTS.ERRORS.INVALID_REFRESH_TOKEN);
+			return response
+				.status(401)
+				.json({ error: CONSTANTS.ERRORS.INVALID_REFRESH_TOKEN });
+		}
+
+		// unfold access token payload
+		const accessTokenPayload = jwt.decode(currentAccessToken) as any;
+
+		// check old refresh token
+		const refreshTokenRecord = await prisma.refreshToken.findUnique({
+			where: { id: refreshTokenPayload.refreshTokenId, isRevoked: false },
+		});
+		if (!refreshTokenRecord) {
+			// token not found so ---> revoke all tokens for this device
+			await prisma.refreshToken.updateMany({
+				where: {
+					userId: accessTokenPayload.userId,
+					deviceIdHash: deviceIdHash,
+				},
+				data: { isRevoked: true },
+			});
+
+			new UnauthorizedError(CONSTANTS.ERRORS.INVALID_REFRESH_TOKEN);
+			return response
+				.status(401)
+				.json({ error: CONSTANTS.ERRORS.INVALID_REFRESH_TOKEN });
+		}
+
+		const userId = refreshTokenPayload.userId;
+		const email = accessTokenPayload.email;
+		const name = accessTokenPayload.name;
+		const image = accessTokenPayload.image || "---";
+
+		// soft delete the old refresh token
+		await prisma.refreshToken.update({
+			where: { id: refreshTokenPayload.refreshTokenId },
+			data: { isRevoked: true },
+		});
+
+		// generate access and refresh tokens
+		const { accessToken, refreshToken } = await generateTokens(
+			userId,
+			email,
+			name,
+			deviceIdHash,
+			deviceInfo,
+			ipAddress
+		);
+		logger.info(CONSTANTS.NEW_TOKEN_GENERATED(accessTokenPayload.email), {
+			userId,
+			email,
+			name,
+			image,
+		});
+		return setAuthCookies(response, accessToken, refreshToken)
+			.status(200)
+			.json({
+				id: accessTokenPayload.userId,
 			});
 	} catch (error) {
 		const errorMessage =
