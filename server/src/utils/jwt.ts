@@ -15,22 +15,50 @@ export const generateAccessToken = (payload: {
 	});
 };
 
-export const generateRefreshToken = (payload: { userId: string }) => {
+export const generateRefreshToken = (payload: {
+	userId: string;
+	refreshTokenId: string;
+	deviceId: string;
+}) => {
 	return jwt.sign(payload, REFRESH_TOKEN_SECRET, {
 		expiresIn: "30d",
 	});
 };
 
-export const verifyAccessToken = (token: string) => {
-	return jwt.verify(token, ACCESS_TOKEN_SECRET) as {
-		userId: string;
-		email: string;
-		name: string;
-	};
+export const verifyAccessToken = (
+	token: string
+): {
+	userId: string;
+	email: string;
+	name: string;
+} | null => {
+	try {
+		const payload = jwt.verify(token, ACCESS_TOKEN_SECRET) as any;
+		return {
+			userId: payload.userId,
+			email: payload.email,
+			name: payload.name,
+		};
+	} catch (error) {
+		return null;
+	}
 };
 
-export const verifyRefreshToken = (token: string) => {
-	return jwt.verify(token, REFRESH_TOKEN_SECRET) as {
-		userId: string;
-	};
+export const verifyRefreshToken = (
+	token: string
+): {
+	userId: string;
+	refreshTokenId: string;
+	deviceId: string;
+} | null => {
+	try {
+		const payload = jwt.verify(token, REFRESH_TOKEN_SECRET) as any;
+		return {
+			userId: payload.userId,
+			deviceId: payload.deviceId,
+			refreshTokenId: payload.refreshTokenId,
+		};
+	} catch (error) {
+		return null;
+	}
 };

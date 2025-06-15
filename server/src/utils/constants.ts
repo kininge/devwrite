@@ -20,9 +20,13 @@ export const CONSTANTS = {
 	LOGOUT_SUCCESS: "Logged out successfully",
 	ERRORS: {
 		MISSING_EMAIL_OR_PASSWORD: "Email and password required.",
+		MISSING_DEVICE_ID: "Device id is required.",
 		USER_ALREADY_EXIST: "User already exists.",
 		INVALID_CREDENTIALS: "Invalid credentials provided.",
 		INVALID_REFRESH_TOKEN: "Invalid or expired refresh token",
+		MISSING_REFRESH_TOKEN: "Refresh token is required.",
 		NO_REFRESH_TOKEN_PROVIDED: "No refresh token provided",
+		INTERNAL_SERVER_ERROR: "Internal server error",
+		MISSING_USER_OR_DEVICE_ID: "User and Device ID are required.",
 	},
 };

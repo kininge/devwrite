@@ -14,9 +14,29 @@ datasource db {
 }
 
 model User {
-  id String @id @default(uuid())
-  email String @unique
-  password String?
-  name String?
-  image String?
+  id            String         @id @default(uuid())
+  email         String         @unique
+  name          String
+  password      String
+  image         String?
+  refreshTokens RefreshToken[] // relation back to RefreshToken
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model RefreshToken {
+  id           String    @id @default(uuid()) // Used as refreshTokenId in JWT
+  userId       String
+  user         User      @relation(fields: [userId], references: [id])
+  deviceIdHash String // SHA256 of device UUID or fingerprint
+  deviceInfo   String? // e.g. user agent data
+  ipAddress    String? // e.g. "10.192.10.11"
+  isRevoked    Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lastUsedAt   DateTime?
+  expiresAt    DateTime
+
+  @@index([userId])
+  @@index([userId, deviceIdHash])
 }
