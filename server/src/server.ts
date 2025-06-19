@@ -8,6 +8,7 @@ import { PATHS } from "./utils/paths";
 import { requestMiddleware } from "./middlewares/request.middleware";
 import logger from "./utils/logger";
 import { CONSTANTS } from "./utils/constants";
+import { errorMiddleware } from "./middlewares/error.middleware";
 
 const app = express(); // Create an Express application
 app.use(requestMiddleware); // Apply the request middleware to log requests
@@ -22,6 +23,9 @@ app.get(PATHS.BASE, (request: Request, response: Response) => {
 	response.send(CONSTANTS.APP_WELCOME_MESSAGE); // Respond with a welcome message
 });
 app.use(PATHS.AUTH_VERSION_1, authRoutes); // auth routes
+
+// Error handling middleware
+app.use(errorMiddleware);
 
 // Start the server
 app.listen(

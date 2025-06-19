@@ -2,7 +2,7 @@
 
 import logger from "./logger";
 
-class CustomError extends Error {
+export class CustomError extends Error {
 	public statusCode: number;
 	public isOperational: boolean;
 
@@ -11,11 +11,15 @@ class CustomError extends Error {
 		this.statusCode = statusCode;
 		this.isOperational = isOperational;
 
-		logger.error({
-			message: this.message,
-			statusCode: this.statusCode,
-			isOperational: this.isOperational,
-		});
+		logger.error(
+			{
+				name: this.name,
+				statusCode: this.statusCode,
+				isOperational: this.isOperational,
+				stack: this.stack,
+			},
+			this.message
+		);
 
 		// Set the prototype explicitly to maintain the correct prototype chain
 		Object.setPrototypeOf(this, new.target.prototype);

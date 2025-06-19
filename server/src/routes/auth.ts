@@ -4,7 +4,7 @@ import express, { Request, Response, NextFunction } from "express";
 import {
 	signup,
 	login,
-	// refreshToken,
+	refreshToken,
 	logoutCurrent,
 	logoutSpecific,
 	logoutAll,
@@ -12,57 +12,30 @@ import {
 import { ACTIONS } from "../utils/paths";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { UserRequest } from "../types/models";
+import { asyncHandler } from "../utils/asyncHandler";
 
 const router = express.Router();
 
 // Route to handle user signup
-router.post(
-	ACTIONS.SIGNUP,
-	(request: Request, response: Response, next: NextFunction) => {
-		Promise.resolve(signup(request, response)).catch(next);
-	}
-);
+router.post(ACTIONS.SIGNUP, asyncHandler(signup));
 
 // Route to handle user login
-router.post(
-	ACTIONS.LOGIN,
-	(request: Request, response: Response, next: NextFunction) => {
-		Promise.resolve(login(request, response)).catch(next);
-	}
-);
+router.post(ACTIONS.LOGIN, asyncHandler(login));
 
 // Route to refresh user tokens
-// router.post(
-// 	ACTIONS.REFRESH_TOKEN,
-// 	(request: Request, response: Response, next: NextFunction) => {
-// 		Promise.resolve(refreshToken(request, response)).catch(next);
-// 	}
-// );
+router.post(ACTIONS.REFRESH_TOKEN, asyncHandler(refreshToken));
 
 // Route to handle user logout-current
-router.post(
-	ACTIONS.LOGOUT_CURRENT,
-	(request: Request, response: Response, next: NextFunction) => {
-		Promise.resolve(logoutCurrent(request, response)).catch(next);
-	}
-);
+router.post(ACTIONS.LOGOUT_CURRENT, asyncHandler(logoutCurrent));
 
 // Route to handle user logout-specific
 router.post(
 	ACTIONS.LOGOUT_SPECIFIC,
 	authMiddleware,
-	(request: UserRequest, response: Response, next: NextFunction) => {
-		Promise.resolve(logoutSpecific(request, response)).catch(next);
-	}
+	asyncHandler(logoutSpecific)
 );
 
 // Route to handle user logout-all
-router.post(
-	ACTIONS.LOGOUT_ALL,
-	authMiddleware,
-	(request: UserRequest, response: Response, next: NextFunction) => {
-		Promise.resolve(logoutAll(request, response)).catch(next);
-	}
-);
+router.post(ACTIONS.LOGOUT_ALL, authMiddleware, asyncHandler(logoutAll));
 
 export default router;

@@ -18,6 +18,10 @@ export const CONSTANTS = {
 		`Password does not match for ${email}`,
 	TOKENS_REFRESHED: "Tokens refreshed",
 	LOGOUT_SUCCESS: "Logged out successfully",
+	EXISTING_USER_CHECKED: "User Checked",
+	PASSWORD_VALIDATED: "Password Validated",
+	TOKEN_MARKED_EXPIRED: (count: number) =>
+		`${count} tokens marked as expired`,
 	ERRORS: {
 		MISSING_EMAIL_OR_PASSWORD: "Email and password required.",
 		MISSING_DEVICE_ID: "Device id is required.",
@@ -28,5 +32,6 @@ export const CONSTANTS = {
 		NO_REFRESH_TOKEN_PROVIDED: "No refresh token provided",
 		INTERNAL_SERVER_ERROR: "Internal server error",
 		MISSING_USER_OR_DEVICE_ID: "User and Device ID are required.",
+		UNHANDLED_ERROR: "An unexpected error occurred",
 	},
 };
